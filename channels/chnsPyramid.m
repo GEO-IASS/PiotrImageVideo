@@ -114,6 +114,8 @@ function pyramid = chnsPyramid( I, varargin )
 
 % get default parameters pPyramid
 if(nargin==2), p=varargin{1}; else p=[]; end
+
+% check and set default parameters
 if( ~isfield(p,'complete') || p.complete~=1 || isempty(I) )
   dfs={ 'pChns',{}, 'nPerOct',8, 'nOctUp',0, 'nApprox',-1, ...
     'lambdas',[], 'pad',[0 0], 'minDs',[16 16], ...
@@ -124,16 +126,20 @@ if( ~isfield(p,'complete') || p.complete~=1 || isempty(I) )
   if(p.nApprox<0), p.nApprox=p.nPerOct-1; end
 end
 if(nargin==0), pyramid=p; return; end; pPyramid=p;
+% put values from struct p to arrays
 vs=struct2cell(p); [pChns,nPerOct,nOctUp,nApprox,lambdas,...
   pad,minDs,smooth,concat,~]=deal(vs{:}); shrink=pChns.shrink;
 
 % convert I to appropriate color space (or simply normalize)
 cs=pChns.pColor.colorSpace; sz=[size(I,1) size(I,2)];
+% evaluate input image I. Convert to color space if necessary.
 if(~all(sz==0) && size(I,3)==1 && ~any(strcmpi(cs,{'gray','orig'}))),
   I=I(:,:,[1 1 1]); warning('Converting image to color'); end %#ok<WNTAG>
 I=rgbConvert(I,cs); pChns.pColor.colorSpace='orig';
 
 % get scales at which to compute features and list of real/approx scales
+% isR, isA: indices of real/approx scales
+% isN: for each scale index, indicates the real index it would use
 [scales,scaleshw]=getScales(nPerOct,nOctUp,minDs,shrink,sz);
 nScales=length(scales); if(1), isR=1; else isR=1+nOctUp*nPerOct; end
 isR=isR:nApprox+1:nScales; isA=1:nScales; isA(isR)=[];
@@ -143,7 +149,7 @@ nTypes=0; data=cell(nScales,nTypes); info=struct([]);
 
 % compute image pyramid [real scales]
 for i=isR
-  s=scales(i); sz1=round(sz*s/shrink)*shrink;
+  s=scales(i); sz1=round(sz*s/shrink)*shrink; %shrinked size
   if(all(sz==sz1)), I1=I; else I1=imResampleMex(I,sz1(1),sz1(2),1); end
   if(s==.5 && (nApprox>0 || nPerOct==1)), I=I1; end
   chns=chnsCompute(I1,pChns); info=chns.info;
