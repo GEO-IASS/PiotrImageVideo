@@ -281,7 +281,15 @@ if( positive ), bbs=gt; bbs=bbs(bbs(:,5)==0,:); else
   end
 end
 % grow bbs to a large padded size and finally crop windows
-modelDsBig=max(8*shrink,modelDsPad)+max(2,ceil(64/shrink))*shrink;
+
+%=================================================================
+% modelDsBig will do padding around small samples
+% disabled for training small objects, ie. vehicles
+% TODO change this to a better solution
+%=================================================================
+
+modelDsBig=max(8*shrink,modelDsPad); %+max(2,ceil(64/shrink))*shrink;
+
 r=modelDs(2)/modelDs(1); assert(all(abs(bbs(:,3)./bbs(:,4)-r)<1e-5));
 r=modelDsBig./modelDs; bbs=bbApply('resize',bbs,r(1),r(2));
 Is=bbApply('crop',I,bbs,'replicate',modelDsBig([2 1]));

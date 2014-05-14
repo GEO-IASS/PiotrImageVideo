@@ -18,7 +18,8 @@
 % Licensed under the Simplified BSD License [see external/bsd.txt]
 
 %% extract training and testing images and ground truth
-dataDir = 'D:\code\research\detectorAcf\data\Inria\';
+%dataDir = 'D:\code\research\detectorAcf\data\Inria\';
+dataDir = '/home/liu_ka/datasets/CaltechPedestrians/Inria/';
 for s=1:2
   if(s==1), set='00'; type='train'; else set='01'; type='test'; end
   if(exist([dataDir type '/posGt'],'dir')), continue; end
